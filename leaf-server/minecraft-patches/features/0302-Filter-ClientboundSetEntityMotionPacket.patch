@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Wed, 18 Mar 2026 16:22:57 +0900
+Subject: [PATCH] Filter ClientboundSetEntityMotionPacket
+
+
+diff --git a/net/minecraft/server/level/ServerEntity.java b/net/minecraft/server/level/ServerEntity.java
+index 057e38b58454a53af3d4bb26dfe95a10231c9456..6c0f8db9ce244dbcb313d73314720485ebb77697 100644
+--- a/net/minecraft/server/level/ServerEntity.java
++++ b/net/minecraft/server/level/ServerEntity.java
+@@ -221,9 +221,20 @@ public class ServerEntity {
+                                         )
+                                     )
+                                 );
+-                        } else { // Leaf - Multithreaded tracker - diff on change
++                        // Canvas start - filter ClientboundSetEntityMotionPacket
++                        } else if (!org.dreeam.leaf.config.modules.opt.ReduceUselessPackets.filterClientboundSetEntityMotionPacket) { // Leaf - Multithreaded tracker - diff on change
+                             this.synchronizer.sendToTrackingPlayers(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
++                        } else {
++                            if (
++                                (this.entity instanceof net.minecraft.world.entity.item.ItemEntity && flag1) ||
++                                    this.entity instanceof net.minecraft.world.entity.projectile.EyeOfEnder ||
++                                    this.entity instanceof net.minecraft.world.entity.animal.squid.Squid ||
++                                    this.entity instanceof net.minecraft.world.entity.projectile.ShulkerBullet
++                            ) {
++                                this.synchronizer.sendToTrackingPlayers(new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
++                            }
+                         }
++                        // Canvas end - filter ClientboundSetEntityMotionPacket
+                     }
+                     } // SparklyPaper end
+                 }
+@@ -555,9 +566,20 @@ public class ServerEntity {
+                                     new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement),
+                                     new ClientboundProjectilePowerPacket(abstractHurtingProjectile.getId(), abstractHurtingProjectile.accelerationPower)
+                                 )));
+-                            } else {
++                            // Canvas start - filter ClientboundSetEntityMotionPacket
++                            } else if (!org.dreeam.leaf.config.modules.opt.ReduceUselessPackets.filterClientboundSetEntityMotionPacket) {
+                                 ctx.sendToTrackingPlayers(tracker, new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
++                            } else {
++                                if (
++                                    (this.entity instanceof net.minecraft.world.entity.item.ItemEntity && flag1) ||
++                                        this.entity instanceof net.minecraft.world.entity.projectile.EyeOfEnder ||
++                                        this.entity instanceof net.minecraft.world.entity.animal.squid.Squid ||
++                                        this.entity instanceof net.minecraft.world.entity.projectile.ShulkerBullet
++                                ) {
++                                    ctx.sendToTrackingPlayers(tracker, new ClientboundSetEntityMotionPacket(this.entity.getId(), this.lastSentMovement));
++                                }
+                             }
++                            // Canvas end - filter ClientboundSetEntityMotionPacket
+                         }
+                     } // SparklyPaper end
+                 }
